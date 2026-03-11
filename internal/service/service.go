@@ -92,3 +92,89 @@ func Delete(id int) error {
 
 	return fmt.Errorf("Task ID: %d not found!\n", id)
 }
+
+func MarkInProgress(id int) error {
+	tasks, err := repository.LoadTasks()
+	if err != nil {
+		return err
+	}
+
+	for i, t := range tasks {
+		if t.Id == id {
+			tasks[i].Status = models.StatusInProgress
+			tasks[i].UpdatedAt = time.Now()
+			if err := repository.SaveTasks(tasks); err != nil {
+				return err
+			}
+
+			fmt.Printf("Task ID: %d successfully marked to in-progress\n", id)
+			return nil
+		}
+	}
+	return fmt.Errorf("Task ID: %d not found!\n", id)
+}
+
+func MarkDone(id int) error {
+	tasks, err := repository.LoadTasks()
+	if err != nil {
+		return err
+	}
+
+	for i, t := range tasks {
+		if t.Id == id {
+			tasks[i].Status = models.StatusDone
+			tasks[i].UpdatedAt = time.Now()
+			if err := repository.SaveTasks(tasks); err != nil {
+				return err
+			}
+			fmt.Printf("Task ID %d successfully marked to Done\n", id)
+			return nil
+		}
+	}
+	return fmt.Errorf("Task ID: %d not found!\n", id)
+}
+
+func ListTasks(filter string) error {
+	tasks, err := repository.LoadTasks()
+	if err != nil {
+		return err
+	}
+
+	filtered := []models.Task{}
+
+	for _, t := range tasks {
+		switch filter {
+		case "todo":
+			if t.Status == models.StatusToDo {
+				filtered = append(filtered, t)
+			}
+		case "in-progress":
+			if t.Status == models.StatusInProgress {
+				filtered = append(filtered, t)
+			}
+		case "done":
+			if t.Status == models.StatusDone {
+				filtered = append(filtered, t)
+			}
+		default:
+			filtered = append(filtered, t)
+		}
+	}
+
+	if len(filtered) == 0 {
+		fmt.Println("Not tasks found")
+		return nil
+	}
+
+	print_tasks(filtered)
+	return nil
+}
+
+func print_tasks(tasks []models.Task) {
+	fmt.Printf("%-4s | %-30s | %-15s | %-20s | %-20s\n", "ID", "Description", "Status", "Created Time", "Updated Time")
+	fmt.Println("-----------------------------------------------------------------------------------------------------")
+
+	for _, task := range tasks {
+		fmt.Printf("%-4d | %-30s | %-15s | %-20v | %-20v\n", task.Id, task.Description, task.Status, task.CreatedAt.Format("2006-01-02 15:04:05"), task.UpdatedAt.Format("2006-01-02 15:04:05"))
+	}
+}

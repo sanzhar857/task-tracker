@@ -55,6 +55,31 @@ func run(args []string) error {
 			return fmt.Errorf("Invalid ID: %s", args[1])
 		}
 		return service.Delete(id)
+	case "mark-in-progress":
+		if len(args) < 2 {
+			return fmt.Errorf("usage: ./task-cli mark-in-progress <id>")
+		}
+
+		id, err := strconv.Atoi(args[1])
+		if err != nil {
+			return fmt.Errorf("Invalid id: %s\n", args[1])
+		}
+		return service.MarkInProgress(id)
+	case "mark-done":
+		if len(args) < 2 {
+			return fmt.Errorf("usage: ./task-cli mark-done <id>")
+		}
+		id, err := strconv.Atoi(args[1])
+		if err != nil {
+			return fmt.Errorf("Invalid id: %s\n", args[1])
+		}
+		return service.MarkDone(id)
+	case "list":
+		filter := ""
+		if len(args) >= 2 {
+			filter = args[1]
+		}
+		return service.ListTasks(filter)
 	}
 
 	return nil
